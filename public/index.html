@@ -1,0 +1,43 @@
+<h1>reCAPTCHA v3 Demo</h1>
+<input type="text" id="hello" value="Hello World" />
+<button type="button" id="send_button">Send</button>
+<hr>
+<div id="result"></div>
+
+<script src="https://www.google.com/recaptcha/api.js?render=ENV-PUBLIC"></script>
+<script>
+    function showResult(text) {
+        document.querySelector('#result').innerHTML = text;
+    }
+
+    function handleClick(token) {
+        return function() {
+            var hello = document.querySelector('#hello').value;
+            var data = {
+                hello: hello,
+                token: token
+            };
+            fetch('http://localhost:3333/graphql', {
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'G_RECAPTCHA_TOKEN': data.token,
+                },
+                method: 'post',
+                body: JSON.stringify({
+                query: `mutation {signup(data: { phone:"12345sdfsd", email: "breno.teste4@adsdain.com", password: "1s23456789", name: "breno"})}`,
+              })
+            })
+                .then(response => response.text())
+                .then(text => showResult(text))
+                .catch(error => showResult(error));
+        }
+    }
+
+    grecaptcha.ready(function() {
+        grecaptcha.execute('ENV-PUBLIC', {action: 'demo'})
+            .then(function(token) {
+                document.querySelector('#send_button').addEventListener('click', handleClick(token));
+            });
+    });
+</script>
